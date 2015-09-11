@@ -1,3 +1,12 @@
 [submodule "cprintf"]
 	path = cprintf
 	url = https://github.com/floyd-m-chitalu/cprintf.git
+[submodule "glm"]
+	path = glm
+	url = https://github.com/g-truc/glm.git
+[submodule "glfw"]
+	path = glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "imgui"]
+	path = imgui
+	url = https://github.com/ocornut/imgui.git
