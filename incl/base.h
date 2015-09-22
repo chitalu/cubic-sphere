@@ -28,6 +28,7 @@
 #endif
 
 #define ENABLE_NULLSPACE 1
+#define APP_NAME "OpenGL-Template [BUILT: " __TIME__ "]"
 
 #define glchk_ assert(glGetError() == GL_NO_ERROR);
 

@@ -2,6 +2,9 @@ project(gl-template)
 
 cmake_minimum_required(VERSION 2.8.12)
 
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+find_package( OpenCL )
+
 if (UNIX)
     set (compiler_flags "-std=c++11")  
 endif()
@@ -45,7 +48,7 @@ add_executable(	${CMAKE_PROJECT_NAME}
 #	the GLFW_LIBRARIES cache variable contains all link-time 
 #	dependencies of GLFW as it is currently configured.
 #--------------------------------------------------------------------
-target_link_libraries(	${CMAKE_PROJECT_NAME} glfw ${GLFW_LIBRARIES} cprintf++)
+target_link_libraries(	${CMAKE_PROJECT_NAME} glfw ${GLFW_LIBRARIES} cprintf++ ${OPENCL_LIBRARIES})
 
 set (glfw_dir ${CMAKE_CURRENT_SOURCE_DIR}/glfw)
 set (glm_dir ${CMAKE_CURRENT_SOURCE_DIR}/glm)
@@ -53,5 +56,5 @@ set (imgui_dir ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 
 set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
 						          INCLUDE_DIRECTORIES 
-                      "${incl_dir};${cprintf_incl_dir};${glfw_dir}/include;${glfw_dir}/deps;${glfw_dir}/deps/GL;${glm_dir};${imgui_dir}"
+                      "${incl_dir};${cprintf_incl_dir};${glfw_dir}/include;${glfw_dir}/deps;${glfw_dir}/deps/GL;${glm_dir};${imgui_dir};${OPENCL_INCLUDE_DIRS}"
                       COMPILE_FLAGS ${compiler_flags})

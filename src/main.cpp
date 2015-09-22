@@ -2,6 +2,7 @@
 #include "camera.h"
 #include <imgui.h>
 #include "gui.h"
+#include "ocl.h"
 #include "nullspace.h"
 #include "demo.h"
 
@@ -147,8 +148,7 @@ void setup(void) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-  window =
-      glfwCreateWindow(window_width, window_height, "OpenGL Basic", NULL, NULL);
+  window = glfwCreateWindow(window_width, window_height, APP_NAME, NULL, NULL);
 
   if (!window)
     exit(1);
@@ -156,13 +156,13 @@ void setup(void) {
   // make current OpenGL context
   glfwMakeContextCurrent(window);
 
-  GLFWmonitor *monitor = glfwGetWindowMonitor(window);
+  GLFWmonitor *monitor = glfwGetPrimaryMonitor();
   if (monitor) {
     const GLFWvidmode *video_mode = glfwGetVideoMode(monitor);
 
-    window_width = video_mode->width / 2;
-    window_height = video_mode->height / 2;
-    glfwSetWindowSize(window, window_width, window_width);
+    window_width = (int)(video_mode->width * 0.6f);
+    window_height = (int)(video_mode->height * 0.6f);
+    glfwSetWindowSize(window, window_width, window_height);
   }
   // load fucntion pointers
   gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -185,6 +185,12 @@ void setup(void) {
 
   // Reset mouse position to be at centre
   glfwSetCursorPos(window, window_width / 2, window_height / 2);
+
+  compute_init();
+  assert(ocl_platform && "compute platform undefined");
+  assert(ocl_device && "compute device undefined");
+  assert(ocl_ctxt && "compute context undefined");
+  assert(ocl_cmd_q && "compute queue undefined");
 
   // Setup ImGui binding
   imgui_init(window, true);
@@ -238,6 +244,9 @@ void teardown(void) {
     cprintf<CPF_STDE>(L"$r*FATAL ERROR$?: demo data could not be destroyed\n");
     abort();
   }
+
+  delete demo;
+
   cam.teardown();
 
 #if ENABLE_NULLSPACE
@@ -245,6 +254,8 @@ void teardown(void) {
 #endif
 
   imgui_shutdown();
+
+  compute_teardown();
 
   if (window)
     glfwDestroyWindow(window);
