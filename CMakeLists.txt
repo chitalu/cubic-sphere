@@ -57,4 +57,5 @@ set (imgui_dir ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
 						          INCLUDE_DIRECTORIES 
                       "${incl_dir};${cprintf_incl_dir};${glfw_dir}/include;${glfw_dir}/deps;${glfw_dir}/deps/GL;${glm_dir};${imgui_dir};${OPENCL_INCLUDE_DIRS}"
-                      COMPILE_FLAGS ${compiler_flags})
+                      COMPILE_FLAGS ${compiler_flags}
+                      OUTPUT_NAME a)

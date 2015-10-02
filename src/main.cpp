@@ -13,14 +13,15 @@
 camera_t cam;
 
 GLFWwindow *window = NULL;
-int window_width = (1024 * 2);
-int window_height = (768 * 2);
+int window_width = 768;
+int window_height = 512;
 double cursor_posx(0);
 double cursor_posy(0);
 bool executing = true;
 bool gui_enabled = false;
 
-demo_app_t *demo = NULL;
+// handle for the demo application
+demo_app_t demo = {};
 
 // In case a GLFW function fails, an error is reported to the
 // GLFW error callback
@@ -48,7 +49,7 @@ static void pfn_glfw_key_cb(GLFWwindow *window, int key, int scancode,
 
   cam.process_input(key, scancode, action, mods);
 
-  demo->input(key, scancode, action, mods);
+  demo.input(key, scancode, action, mods);
 }
 
 const char *load_src(const char *path) {
@@ -134,7 +135,7 @@ GLuint create_shader_program(int32_t shader_count, ...) {
   return program;
 }
 
-void setup(void) {
+void setup(int argc, char const *argv[]) {
   cprintf(L"$c*`begin$? program setup\n");
 
   glfwSetErrorCallback(pfn_glfw_err_cb);
@@ -176,7 +177,7 @@ void setup(void) {
   // set a cursor position callback for "window".
   // glfwSetCursorPosCallback(window, pfn_glfw_curspos_cb);
 
-  glfwGetFramebufferSize(window, &window_width, &window_height);
+  //glfwSetFramebufferSize(window, &window_width, &window_height);
 
   // GLFW_CURSOR_DISABLED hides and grabs the cursor, providing virtual and
   // unlimited cursor movement. This is useful for implementing for example
@@ -226,9 +227,7 @@ void setup(void) {
   cam.setup(glm::vec3(0.0f, 2.0f, 0.0f), 45.0f,
             (float)window_height / (float)window_width, 1.0f, 1000.0f);
 
-  demo = new demo_app_t;
-
-  if (!demo->init()) {
+  if (!demo.init(argc, argv)) {
     cprintf<CPF_STDE>(
         L"$r*FATAL ERROR$?: demo data could not be initialised\n");
     abort();
@@ -237,17 +236,13 @@ void setup(void) {
   cprintf(L"program setup $g*success$?`!\n");
 }
 
-void teardown(void) {
+void teardown() {
   cprintf(L"$c*`begin$? program teardown\n");
 
-  if (!demo->teardown()) {
+  if (!demo.teardown()) {
     cprintf<CPF_STDE>(L"$r*FATAL ERROR$?: demo data could not be destroyed\n");
     abort();
   }
-
-  delete demo;
-
-  cam.teardown();
 
 #if ENABLE_NULLSPACE
   nullspace_teardown();
@@ -330,7 +325,7 @@ void run(void) {
     // update ...
     imgui_update();
     cam.apply(dt);
-    demo->update(dt);
+    demo.update(dt);
 
     // render
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -340,7 +335,7 @@ void run(void) {
 #if ENABLE_NULLSPACE
       nullspace_render();
 #endif
-      demo->render();
+      demo.render();
     }
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -349,7 +344,7 @@ void run(void) {
 
 int main(int argc, char const *argv[]) {
   std::atexit(teardown);
-  setup();
+  setup(argc, argv);
   run();
   return 0;
 }

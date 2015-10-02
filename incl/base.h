@@ -46,7 +46,6 @@ extern GLuint create_shader(GLenum type, const char *src);
 extern GLuint create_shader_program(int shader_count, ...);
 
 struct demo_app_t;
-
-extern demo_app_t* demo;
+extern demo_app_t demo;
 
 #endif

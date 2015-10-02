@@ -1,7 +1,7 @@
 #include "demo.h"
 #include <cprintf/cprintf.hpp>
 
-bool demo_app_t::init(void) {
+bool demo_app_t::init(int argc, char const *argv[]) {
   bool rt = true;
   cprintf(L"$c*`begin$? demo setup\n");
 
