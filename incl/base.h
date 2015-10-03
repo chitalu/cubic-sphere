@@ -19,7 +19,9 @@
 #include <cstdio>
 #include <cstdint>
 #include <cmath>
+
 #include <string>
+#include <vector>
 
 #include "time-sampler.h"
 
