@@ -4,7 +4,7 @@
 camera_t::camera_t()
     : matrix(1.0), dir(0.0f), right(0.0f), target(glm::vec3(0.0f, 0.0f, 0.0f)),
       horizontal_ang((float)M_PI), vertical_ang(0.0f), speed(0.0f),
-      rotational_speed(0.08f), showreel(false) {}
+      rotational_speed(0.08f), showreel(true) {}
 
 camera_t::~camera_t(void) { ; }
 
@@ -21,8 +21,8 @@ void camera_t::teardown(void) {}
 void camera_t::apply(float dt) {
   // pivot around a particular position i.e. "target"
   if (showreel) {
-    static float radius = 24.72f, height = 10.50f, t = 0;
-    t += dt;
+    static float radius = 16.72f, height = 5.0f, t = 0;
+    t += dt / 2;
     this->pos = glm::vec3(radius * cos(float(M_PI * 2.0f) + t), height,
                           radius * sin(float(M_PI * 2.0f) + t));
     this->matrix = glm::lookAt(pos, target, glm::vec3(0.0f, 1.0f, 0.0f));

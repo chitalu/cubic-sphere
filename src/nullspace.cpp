@@ -2,23 +2,24 @@
 #include "base.h"
 #include "camera.h"
 
-const char *vs_src = ""
-                     "#version 330 core\n"
-                     "uniform mat4 u_mvp;\n"
-                     "layout(location = 0) in vec4 a_pos;\n"
-                     "void main(void) {\n"
-                     "  gl_Position = (u_mvp * a_pos);\n"
-                     "}\n";
+static const char *vs_src = ""
+                            "#version 330 core\n"
+                            "uniform mat4 u_mvp;\n"
+                            "layout(location = 0) in vec4 a_pos;\n"
+                            "void main(void) {\n"
+                            "  gl_Position = (u_mvp * a_pos);\n"
+                            "}\n";
 
-const char *fs_src = ""
-                     "#version 330 core\n"
-                     "uniform vec3 u_color = vec3(1, 1, 0);\n"
-                     "layout(location = 0) out vec4 fragment;\n"
-                     "void main(void) { fragment = vec4(u_color, 1.0f); }\n";
+static const char *fs_src =
+    ""
+    "#version 330 core\n"
+    "uniform vec3 u_color = vec3(1, 1, 0);\n"
+    "layout(location = 0) out vec4 fragment;\n"
+    "void main(void) { fragment = vec4(u_color, 1.0f); }\n";
 
 GLuint vtx_buf;
 GLuint vtx_arr;
-GLuint shdr_prog;
+static GLuint shdr_prog;
 
 int sz = 8, num_grid_verts = sz * (2 * 4), num_border_verts = 4,
     num_axes_verts = 6,
@@ -85,16 +86,16 @@ void nullspace_init(void) {
       /* axis lines (GL_LINES)*/
 
       // x-axis
-      ptr[idx++] = glm::vec4(-sz, 0, -sz, 1);
-      ptr[idx++] = glm::vec4(sz, 0, -sz, 1);
+      ptr[idx++] = glm::vec4(-sz, 0, 0, 1);
+      ptr[idx++] = glm::vec4(sz, 0, 0, 1);
 
       // y-axis
-      ptr[idx++] = glm::vec4(sz, sz, sz, 1);
-      ptr[idx++] = glm::vec4(sz, 0, sz, 1);
+      ptr[idx++] = glm::vec4(0, sz, 0, 1);
+      ptr[idx++] = glm::vec4(0, 0, 0, 1);
 
       // z-axis
-      ptr[idx++] = glm::vec4(sz, 0, -sz, 1);
-      ptr[idx++] = glm::vec4(sz, 0, sz, 1);
+      ptr[idx++] = glm::vec4(0, 0, -sz, 1);
+      ptr[idx++] = glm::vec4(0, 0, sz, 1);
 
       GLboolean result = glUnmapBuffer(GL_ARRAY_BUFFER);
       if (!result) {
@@ -132,9 +133,9 @@ void nullspace_render(void) {
   glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
   glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
   glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer);
-  GLboolean depth_buf_enabled = glIsEnabled(GL_DEPTH_TEST);
+  GLboolean depth_test_was_enabled = glIsEnabled(GL_DEPTH_TEST);
 
-  if (!depth_buf_enabled)
+  if (!depth_test_was_enabled)
     glEnable(GL_DEPTH_TEST);
 
   glUseProgram(shdr_prog);
@@ -170,7 +171,9 @@ void nullspace_render(void) {
   glBindVertexArray(0);
   glUseProgram(0);
 
-  if (!depth_buf_enabled)
+  if (depth_test_was_enabled)
+    glEnable(GL_DEPTH_TEST);
+  else
     glDisable(GL_DEPTH_TEST);
 
   // Restore modified GL state

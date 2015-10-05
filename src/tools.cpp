@@ -83,6 +83,35 @@ void make_grid(mesh_create_info_t *info, mesh_t *m) {
 void make_sphere(mesh_create_info_t *info, mesh_t *m) {
   printf("preparing sphere mesh\n");
   assert(m != NULL && "null pointer");
+
+  float radius = info->sz_param0 / 2.0f;
+  int latitudes = info->sz_param1;
+  int longitudes = info->sz_param2;
+
+  m->vtx_data.resize(latitudes * longitudes);
+
+  float latitude_increment = 360.0f / latitudes;
+  float longitude_increment = 180.0f / longitudes;
+
+  for (float u = 0; u < 360.0f; u += latitude_increment) {
+    for (float t = 0; t < 180.0f; t += longitude_increment) {
+      float rad = radius;
+
+      float x = (float)(rad * sin(glm::radians(t)) * sin(glm::radians(u)));
+      float y = (float)(rad * cos(glm::radians(t)));
+      float z = (float)(rad * sin(glm::radians(t)) * cos(glm::radians(u)));
+
+      m->vtx_data.push_back({ x, y, z });
+
+      float x1 = (float)(rad * sin(glm::radians(t + longitude_increment)) *
+                         sin(glm::radians(u + latitude_increment)));
+      float y1 = (float)(rad * cos(glm::radians(t + longitude_increment)));
+      float z1 = (float)(rad * sin(glm::radians(t + longitude_increment)) *
+                         cos(glm::radians(u + latitude_increment)));
+
+      m->vtx_data.push_back({ x1, y1, z1 });
+    }
+  }
 }
 
 void make_cube(mesh_create_info_t *info, mesh_t *m) {
@@ -103,8 +132,8 @@ void make_cube(mesh_create_info_t *info, mesh_t *m) {
     { -size_x, -size_y, -size_z }, // 4
     { size_x, -size_y, -size_z },  // 5
     { size_x, size_y, -size_z },   // 6
-    { -size_x, size_y, -size_z } // 7
-  }; 
+    { -size_x, size_y, -size_z }   // 7
+  };
 
   m->idx_data = {
     // front

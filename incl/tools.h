@@ -22,7 +22,7 @@ enum mesh_type {
 
 struct mesh_create_info_t {
   mesh_type type;
-  size_t sz_param0, sz_param1, sz_param2;
+  float sz_param0, sz_param1, sz_param2;
 };
 
 extern void create_mesh_data(mesh_create_info_t *info, mesh_t *out);

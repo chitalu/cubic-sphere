@@ -161,7 +161,7 @@ void setup(int argc, char const *argv[]) {
   if (monitor) {
     const GLFWvidmode *video_mode = glfwGetVideoMode(monitor);
 
-    window_width = (int)(video_mode->width * 0.6f);
+    window_width = (int)(video_mode->width * 0.5f);
     window_height = (int)(video_mode->height * 0.6f);
     glfwSetWindowSize(window, window_width, window_height);
   }
