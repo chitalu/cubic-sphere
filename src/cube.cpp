@@ -98,7 +98,7 @@ bool sphere_t::check_collisions(void) {
   // L' = <N, D-r>
   // The plane L' is parallel to L
   float D = 0.0f;
-  float plane_diff = glm::abs(D - r);
+  float plane_diff = (D - r);
   glm::vec4 L(0.0f, 1.0f, 0.0f, D), L0 = glm::vec4(glm::vec3(L), plane_diff);
 
   // if L.P >= r then there is no colision
@@ -112,6 +112,8 @@ void sphere_t::update(float dt) {
 
   const glm::vec3 fgrav = { 0.0f, -9.8f, 0.0f };
   const glm::vec3 fnorm = -fgrav;
+
+  glm::vec3 momentum = state.mass * state.crnt_vel;
 
   // sum forces
   state.force = fgrav;
