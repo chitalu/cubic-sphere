@@ -4,6 +4,7 @@
 #include "tools.h"
 #include "camera.h"
 #include "cube.h"
+#include "sphere.h"
 #include <memory>
 
 static GLint shdr_prog = 0;
@@ -30,7 +31,7 @@ void main(void) {
 }
 )vs";
 
-const char* fs_src = R"vs(
+const char *fs_src = R"vs(
 #version 330
 
 in vs_data{
@@ -43,8 +44,6 @@ layout(location = 0) out vec4 frag;
 
 void main(void) { frag = vec4(input_.colr, 1.0f); }
 )vs";
-
-static cube_t cube;
 
 static std::vector<std::unique_ptr<object_t>> objects;
 
@@ -59,15 +58,17 @@ bool demo_app_t::init(int argc, char const *argv[]) {
   glDeleteShader(vs);
   glDeleteShader(vs);
 
-  cube.setup({ 0.5f, 1.0f, 0.0f });
- 
-  objects.resize(5);
-  float i = -8;
-  for(auto& obj: objects)
-  {
-    obj = std::unique_ptr<object_t>(new sphere_t);
-    obj->setup({i+=2.5, 10.0f, 0.0f});
-  } 
+  objects.resize(10);
+  int i = -8;
+  for (auto &obj : objects) {
+    if (i < 0)
+      obj = std::unique_ptr<object_t>(new sphere_t);
+    else
+      obj = std::unique_ptr<object_t>(new cube_t);
+
+    obj->setup({i, 5.0f, i & 1 ? i : -i});
+    i += 2;
+  }
 
   if (rt)
     cprintf(L"demo setup $g*success$?`!\n");
@@ -78,10 +79,8 @@ bool demo_app_t::teardown(void) {
   bool rt = true;
   cprintf(L"$c*`begin$? demo teardown\n");
 
-  for(auto& obj: objects)
+  for (auto &obj : objects)
     obj->teardown();
-  
-  cube.teardown();
 
   if (rt)
     cprintf(L"demo teardown $g*success$?`!\n");
@@ -89,41 +88,39 @@ bool demo_app_t::teardown(void) {
 }
 
 void demo_app_t::update(float dt) {
-  cube.update(dt);
-  for(auto& obj: objects){
-    void *ptr = (void*)dynamic_cast<sphere_t*>(obj.get());
-    if(ptr){
-      ((sphere_t*)ptr)->update(dt);
+
+  for (auto &obj : objects) {
+    void *ptr = (void *)dynamic_cast<sphere_t *>(obj.get());
+    if (ptr) {
+      ((sphere_t *)ptr)->update(dt);
       continue;
     }
 
     ptr = (void *)dynamic_cast<cube_t *>(obj.get());
-    if(ptr){
-      ((cube_t*)ptr)->update(dt);
+    if (ptr) {
+      ((cube_t *)ptr)->update(dt);
       continue;
     }
 
     assert(0 && "Invalid pointer casting!");
   }
-  
 }
 
 void demo_app_t::input(int key, int scancode, int action, int mods) {}
 
 void demo_app_t::render(void) {
   // draw cubes
-  cube.render(shdr_prog);
 
-  for(auto& obj: objects){
-    void *ptr = (void*)dynamic_cast<sphere_t*>(obj.get());
-    if(ptr){
-      ((sphere_t*)ptr)->render(shdr_prog);
+  for (auto &obj : objects) {
+    void *ptr = (void *)dynamic_cast<sphere_t *>(obj.get());
+    if (ptr) {
+      ((sphere_t *)ptr)->render(shdr_prog);
       continue;
     }
 
     ptr = (void *)dynamic_cast<cube_t *>(obj.get());
-    if(ptr){
-      ((cube_t*)ptr)->render(shdr_prog);
+    if (ptr) {
+      ((cube_t *)ptr)->render(shdr_prog);
       continue;
     }
 
