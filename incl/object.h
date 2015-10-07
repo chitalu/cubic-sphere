@@ -4,15 +4,15 @@
 #include "base.h"
 #include "tools.h"
 
-struct object_t {
-  // "graphics" definition of an object
-  struct gdef_t {
-    enum vattr {
-      pos = 0,
-      norm = 1,
-      txcrd = 2,
-      col = 3
-    };
+template <typename T> struct gfx_obj_t {
+  typedef T derived_t;
+  static constexpr struct {
+    uint32_t pos, norm, txcrd, col;
+  } vtx_attr = {0U, 1U, 2U, 3U};
+  static uint32_t buf_usage;
+  static mesh_t mesh;
+
+  struct def_t {
     GLuint vao;
     union {
       GLuint arr[4];
@@ -22,66 +22,65 @@ struct object_t {
     } bufs; // handles
   };
 
-  object_t(void) : mat(glm::mat4(1.0f)), pos(0.0f) {}
-   ~object_t(void) {}
+  static def_t gfx_def;
 
-  virtual void setup(glm::vec3 pos) =0;
-  virtual void teardown(void)=0;
+  gfx_obj_t(void) {}
+  ~gfx_obj_t(void) {}
 
-  inline const glm::mat4 &get_matrix(void) const { return mat; }
-
-  void init_static_bufs_(mesh_t &mesh, gdef_t &graphics) {
-
-    auto fill_buf = [&](GLenum target, GLsizei sz, void *host_ptr) {
-      glBufferData(target, sz, NULL, GL_STATIC_DRAW);
-
-      void *gpu_ptr = glMapBuffer(target, GL_WRITE_ONLY);
-      if (!gpu_ptr) {
-        fprintf(stderr, "ERROR: failed to map buffer\n");
-        exit(1);
+  void define_(const mesh_create_info_t &mci) {
+    struct {
+      void operator()(GLenum target, GLsizei sz, void *host_ptr) {
+        glBufferData(target, sz, NULL, GL_STATIC_DRAW);
+        void *gpu_ptr = glMapBuffer(target, GL_WRITE_ONLY);
+        if (!gpu_ptr) {
+          fprintf(stderr, "ERROR: failed to map buffer\n");
+          exit(1);
+        }
+        memcpy(gpu_ptr, host_ptr, sz);
+        GLboolean result = glUnmapBuffer(target);
+        if (!result) {
+          fprintf(stderr, "ERROR: failed to unmap buffer\n");
+          exit(1);
+        }
+        gpu_ptr = NULL;
       }
-      memcpy(gpu_ptr, host_ptr, sz);
-      GLboolean result = glUnmapBuffer(target);
-      if (!result) {
-        fprintf(stderr, "ERROR: failed to unmap buffer\n");
-        exit(1);
-      }
-      gpu_ptr = NULL;
-    };
+    } fill_buf;
 
-    glGenVertexArrays(1, &graphics.vao);
-    glGenBuffers(4, graphics.bufs.arr);
+    create_mesh_data(&mci, &mesh);
 
-    glBindVertexArray(graphics.vao);
+    glGenVertexArrays(1, &gfx_def.vao);
+    glGenBuffers(4, (GLuint *)(&gfx_def.bufs));
+
+    glBindVertexArray(gfx_def.vao);
 
     // vertices
-    glBindBuffer(GL_ARRAY_BUFFER, graphics.bufs.vtx);
+    assert(!mesh.vtx_data.empty() && "Invalid mesh structure!");
+    glBindBuffer(GL_ARRAY_BUFFER, gfx_def.bufs.vtx);
     fill_buf(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mesh.vtx_data.size(),
              (GLvoid *)mesh.vtx_data.data());
-    glVertexAttribPointer(gdef_t::vattr::pos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(vtx_attr.pos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
     // indices
     if (!mesh.idx_data.empty()) {
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, graphics.bufs.idx);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gfx_def.bufs.idx);
       fill_buf(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * mesh.idx_data.size(),
                (GLvoid *)mesh.idx_data.data());
     }
 
     // normals
     if (!mesh.norm_data.empty()) {
-      glBindBuffer(GL_ARRAY_BUFFER, graphics.bufs.nrm);
+      glBindBuffer(GL_ARRAY_BUFFER, gfx_def.bufs.nrm);
       fill_buf(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mesh.norm_data.size(),
                (GLvoid *)mesh.norm_data.data());
-      glVertexAttribPointer(gdef_t::vattr::norm, 3, GL_FLOAT, GL_TRUE, 0, NULL);
+      glVertexAttribPointer(vtx_attr.norm, 3, GL_FLOAT, GL_TRUE, 0, NULL);
     }
 
     // texture coordinates
     if (!mesh.txcrd_data.empty()) {
-      glBindBuffer(GL_ARRAY_BUFFER, graphics.bufs.txcrd);
+      glBindBuffer(GL_ARRAY_BUFFER, gfx_def.bufs.txcrd);
       fill_buf(GL_ARRAY_BUFFER, sizeof(glm::vec2) * mesh.txcrd_data.size(),
                (GLvoid *)mesh.txcrd_data.data());
-      glVertexAttribPointer(gdef_t::vattr::txcrd, 2, GL_FLOAT, GL_TRUE, 0,
-                            NULL);
+      glVertexAttribPointer(vtx_attr.txcrd, 2, GL_FLOAT, GL_TRUE, 0, NULL);
     }
 
     glBindVertexArray(0);
@@ -89,9 +88,18 @@ struct object_t {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   }
 
-  void destroy_static_bufs_(gdef_t &graphics) {
-    glDeleteBuffers(4, graphics.bufs.arr);
-  }
+  void destroy_(void) { glDeleteBuffers(4, (GLuint*)(&gfx_def.bufs)); }
+};
+
+struct object_t {
+
+  object_t(void) : mat(glm::mat4(1.0f)), pos(0.0f) {}
+  ~object_t(void) {}
+
+  virtual void setup(glm::vec3 pos) = 0;
+  virtual void teardown(void) = 0;
+
+  inline const glm::mat4 &get_matrix(void) const { return mat; }
 
 protected:
   glm::mat4 mat;

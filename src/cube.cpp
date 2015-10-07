@@ -2,9 +2,9 @@
 #include "tools.h"
 #include "camera.h"
 
-uint32_t cube_t::buf_usage = 0;
-mesh_t cube_t::mesh = {};
-object_t::gdef_t cube_t::gfx = {};
+template <> uint32_t gfx_obj_t<cube_t>::buf_usage = 0;
+template <> mesh_t gfx_obj_t<cube_t>::mesh = {};
+template <> gfx_obj_t<cube_t>::def_t gfx_obj_t<cube_t>::gfx_def = {};
 
 void cube_t::setup(glm::vec3 pos) {
   this->pos = pos;
@@ -14,15 +14,14 @@ void cube_t::setup(glm::vec3 pos) {
         .sz_param0 = 0.5f, // length
         .sz_param1 = 0.5f, // breadth
         .sz_param2 = 0.5f  // depth
-    };
-    create_mesh_data(&mci, &mesh);
-    this->init_static_bufs_(mesh, gfx);
+    }; 
+    gfx_obj_t<cube_t>::define_(mci);
   }
 }
 
 void cube_t::teardown(void) {
   if (--buf_usage == 0)
-    this->destroy_static_bufs_(gfx);
+    gfx_obj_t<cube_t>::destroy_();
 }
 
 void cube_t::update(float dt) {
@@ -44,16 +43,15 @@ void cube_t::render(GLuint shdr_prog) {
   location = glGetUniformLocation(shdr_prog, "u_norm_mtrx");
   glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(normal));
 
-  glBindVertexArray(gfx.vao);
-  glEnableVertexAttribArray(gdef_t::vattr::pos);
-  glEnableVertexAttribArray(gdef_t::vattr::norm);
+  glBindVertexArray(gfx_def.vao);
+  glEnableVertexAttribArray(vtx_attr.pos);
+  glEnableVertexAttribArray(vtx_attr.norm);
 
   glDrawElements(GL_TRIANGLES, mesh.idx_data.size(), GL_UNSIGNED_INT, NULL);
 
-  glDisableVertexAttribArray(gdef_t::vattr::pos);
-  glDisableVertexAttribArray(gdef_t::vattr::norm);
+  glDisableVertexAttribArray(vtx_attr.pos);
+  glDisableVertexAttribArray(vtx_attr.norm);
   glBindVertexArray(0);
   glUseProgram(0);
 }
-
 

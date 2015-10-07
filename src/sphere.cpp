@@ -2,22 +2,24 @@
 #include "tools.h"
 #include "camera.h"
 
-uint32_t sphere_t::buf_usage = 0;
-mesh_t sphere_t::mesh = {};
-object_t::gdef_t sphere_t::gfx = {};
+template<>
+uint32_t gfx_obj_t<sphere_t>::buf_usage = 0;
+
+template<>
+mesh_t  gfx_obj_t<sphere_t>::mesh = {};
+
+template<>
+gfx_obj_t<sphere_t>::def_t gfx_obj_t<sphere_t>::gfx_def = {};
 
 void sphere_t::setup(glm::vec3 pos) {
-
   if (!buf_usage++) {
-    mesh_create_info_t mci = {
+    const mesh_create_info_t mci = {
         .type = mesh_type::SPHERE,
         .sz_param0 = 2.0f,  // diameter
         .sz_param1 = 32.0f, // lattitude
         .sz_param2 = 32.0f  // longitude
     };
-
-    create_mesh_data(&mci, &mesh);
-    this->init_static_bufs_(mesh, gfx);
+    gfx_obj_t<sphere_t>::define_(mci);
   }
 
   this->pos = pos;
@@ -30,7 +32,7 @@ void sphere_t::setup(glm::vec3 pos) {
 
 void sphere_t::teardown(void) {
   if (--buf_usage == 0)
-    this->destroy_static_bufs_(gfx);
+    gfx_obj_t<sphere_t>::destroy_();
 }
 
 bool sphere_t::check_collisions(void) {
@@ -89,13 +91,13 @@ void sphere_t::render(GLuint shdr_prog) {
   location = glGetUniformLocation(shdr_prog, "u_norm_mtrx");
   glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(normal));
 
-  glBindVertexArray(gfx.vao);
-  glEnableVertexAttribArray(gdef_t::vattr::pos);
+  glBindVertexArray(gfx_def.vao);
+  glEnableVertexAttribArray(vtx_attr.pos);
   // glEnableVertexAttribArray(gdef_t::vattr::norm);
 
   glDrawArrays(GL_LINE_LOOP, 0, mesh.vtx_data.size());
 
-  glDisableVertexAttribArray(gdef_t::vattr::pos);
+  glDisableVertexAttribArray(vtx_attr.pos);
   // glDisableVertexAttribArray(gdef_t::vattr::norm);
   glBindVertexArray(0);
   glUseProgram(0);

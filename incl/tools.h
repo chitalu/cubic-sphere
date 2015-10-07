@@ -25,7 +25,7 @@ struct mesh_create_info_t {
   float sz_param0, sz_param1, sz_param2;
 };
 
-extern void create_mesh_data(mesh_create_info_t *info, mesh_t *out);
+extern void create_mesh_data(const mesh_create_info_t *info, mesh_t *out);
 extern void destroy_mesh_data(mesh_t *ptr);
 
 #endif

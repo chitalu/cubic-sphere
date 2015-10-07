@@ -3,8 +3,8 @@
 
 #include "object.h"
 
-struct sphere_t : public object_t {
-  sphere_t(void) : object_t() {}
+struct sphere_t : public object_t, public gfx_obj_t<sphere_t> {
+  sphere_t(void) : object_t(), gfx_obj_t<sphere_t>() {}
 
   virtual ~sphere_t(void) {}
 
@@ -21,9 +21,7 @@ private:
   } state;
   bool check_collisions();
 
-  static uint32_t buf_usage;
-  static mesh_t mesh;
-  static object_t::gdef_t gfx;
+  
 };
 
 

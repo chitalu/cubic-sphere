@@ -1,7 +1,7 @@
 
 #include "tools.h"
 
-void make_quad(mesh_create_info_t *info, mesh_t *m) {
+void make_quad(const mesh_create_info_t* info, mesh_t *m) {
   printf("prepare quad mesh\n");
   assert(m != NULL && "null pointer");
 
@@ -26,7 +26,7 @@ void make_quad(mesh_create_info_t *info, mesh_t *m) {
   };
 }
 
-void make_grid(mesh_create_info_t *info, mesh_t *m) {
+void make_grid(const mesh_create_info_t* info, mesh_t *m) {
   printf("preparing grid mesh\n");
   assert(m != NULL && "null pointer");
 
@@ -80,7 +80,7 @@ void make_grid(mesh_create_info_t *info, mesh_t *m) {
   };
 }
 
-void make_sphere(mesh_create_info_t *info, mesh_t *m) {
+void make_sphere(const mesh_create_info_t* info, mesh_t *m) {
   printf("preparing sphere mesh\n");
   assert(m != NULL && "null pointer");
 
@@ -114,7 +114,7 @@ void make_sphere(mesh_create_info_t *info, mesh_t *m) {
   }
 }
 
-void make_cube(mesh_create_info_t *info, mesh_t *m) {
+void make_cube(const mesh_create_info_t *info, mesh_t *m) {
   printf("preparing cube mesh\n");
   assert(m != NULL && "null pointer");
 
@@ -172,12 +172,12 @@ void make_cube(mesh_create_info_t *info, mesh_t *m) {
   m->txcrd_data.push_back(glm::vec2(0.0, 1.0));
 }
 
-void make_torus(mesh_create_info_t *info, mesh_t *m) {
+void make_torus(const mesh_create_info_t* info, mesh_t *m) {
   printf("preparing torus mesh\n");
   assert(m != NULL && "null pointer");
 }
 
-void create_mesh_data(mesh_create_info_t *info, mesh_t *m) {
+void create_mesh_data(const mesh_create_info_t *info, mesh_t *m) {
   assert(m != NULL && "null pointer");
 
   switch (info->type) {
